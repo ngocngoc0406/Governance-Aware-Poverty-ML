@@ -10,6 +10,8 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{placeins}
@@ -487,7 +489,7 @@ To provide actionable administrative insights, we conduct a qualitative audit of
 While empirical testing evaluates Costa Rica national census and UCI benchmarks, the underlying survey variables (\texttt{dependency}, housing construction materials, asset counts, education) are standard indicators collected across multilateral Proxy Means Testing instruments globally (e.g., in South East Asian contexts such as Vietnam, Indonesia, or the Philippines). The lightweight computational footprint ($0.25$s training, $<0.068$ ms inference) enables straightforward integration into existing government social assistance management information systems (MIS).
 
 \subsection{Reproducibility & Open Source Commitment}
-To guarantee full experimental reproducibility, the complete pipeline—including dataset preprocessing, custom PWC-Loss XGBoost objective implementation, 5x5 hyperparameter grid search, demographic fairness audits, and SHAP counterfactual routines—is available at: \texttt{https://github.com/ngocngoc0406/Governance-Aware-Poverty-ML}.
+To guarantee full experimental reproducibility, the complete pipeline—including dataset preprocessing, custom PWC-Loss XGBoost objective implementation, 5x5 hyperparameter grid search, demographic fairness audits, and SHAP counterfactual routines—is available at: \href{https://github.com/ngocngoc0406/Governance-Aware-Poverty-ML}{\texttt{github.com/ngocngoc0406/}}\\ \href{https://github.com/ngocngoc0406/Governance-Aware-Poverty-ML}{\texttt{Governance-Aware-Poverty-ML}}.
 
 \subsection{Limitations and Future Work}
 While our proposed framework demonstrates strong empirical performance and regulatory compliance, several limitations warrant future investigation:
