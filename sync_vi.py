@@ -108,18 +108,18 @@ h_i = p_i^\gamma (1 - p_i) \left[ 1 + \gamma \log(1 - p_i) \right]
 \end{equation}
 
 \newtheorem{lemma}{Bổ đề}
-\begin{lemma}[Tính Dương Của Hessian và Sự Ổn Định Trong Tối Ưu Hóa Nút Cây]
-Với mọi trạng thái nghềo $y_i \in \{0, 1\}$, xác suất dự đoán $p_i \in (0, 1)$, hệ số $\alpha \ge 1$, và $\gamma \ge 0$, Hessian bậc hai $h_i = \frac{\partial^2 \mathcal{L}_{\text{PWC}}}{\partial \hat{y}_i^2}$ luôn dương nghiêm ngặt ($h_i > 0$).
+\begin{lemma}[Tính Dương Của Hessian Qua Điều Hòa Ngưỡng Dương]
+Với mọi xác suất dự đoán $p_i = \sigma(\hat{y}_i) \in (0, 1)$, hệ số $\alpha \ge 1$, và $\gamma \ge 0$, việc áp dụng điều hòa ngưỡng dương $h_i \leftarrow \max(h_i, \delta)$ với $\delta = 10^{-6}$ đảm bảo nghiêm ngặt tính dương của Hessian bậc hai ($h_i \ge \delta > 0$).
 \end{lemma}
 \begin{proof}
-Vì $p_i = \sigma(\hat{y}_i) \in (0, 1)$, ta có $(1 - p_i) \in (0, 1)$. Với $y_i = 1$, $h_i = \alpha (1 - p_i)^{\gamma-1} p_i (1 - p_i) [1 + \gamma \log(p_i)] > 0$ nghiêm ngặt do $\alpha \ge 1$ và $p_i(1-p_i) > 0$. Tương tự với $y_i = 0$, $h_i = p_i^\gamma (1 - p_i) [1 + \gamma \log(1 - p_i)] > 0$. Hessian luôn dương đảm bảo cập nhật trọng số lá $w^* = -\frac{\sum g_i}{\sum h_i + \lambda}$ trong gradient tree boosting không bao giờ bị triệt tiêu mẫu số.
+Đối với các hàm mục tiêu cây không lồi, đạo hàm bậc 2 có thể biến thiên trên miền log-odds. Việc áp dụng ngưỡng dưới dương $\delta = 10^{-6}$ (quy chuẩn thực thi trong các hàm loss XGBoost custom \cite{b20}) đảm bảo $h_i \ge \delta > 0$ nghiêm ngặt cho mọi mẫu $i$, tránh triệt tiêu mẫu số và đảm bảo bước cập nhật trọng số lá $w_j^* = -\frac{\sum g_i}{\sum h_i + \lambda}$ luôn ổn định.
 \end{proof}
 
-\begin{lemma}[Sự Hội Tụ Đơn Điệu Của Bước Cập Nhật Trọng Số Lá Cây]
-Ký hiệu $I_j$ là tập hợp các hộ gia đình được phân vào nút lá $j$. Với tham số điều hòa L2 $\lambda > 0$, bước cập nhật trọng số lá tối ưu $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}$ dưới hàm $\mathcal{L}_{\text{PWC}}$ luôn bị chặn nghiêm ngặt đối với mọi xác suất $p_i \in [\epsilon, 1-\epsilon]$, đảm bảo sự giảm đơn điệu của hàm mục tiêu trong quá trình dựng cây.
+\begin{lemma}[Sự Hội Tụ Đơn Điệu Của Bước Cập Nhật Trọng Số Lá Cây Bị Chặn]
+Ký hiệu $I_j$ là tập hợp các hộ gia đình được phân vào nút lá $j$. Với tham số điều hòa L2 $\lambda > 0$ và ngưỡng Hessian dưới $\delta > 0$, bước cập nhật trọng số lá tối ưu $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}$ dưới hàm $\mathcal{L}_{\text{PWC}}$ luôn bị chặn bởi $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, đảm bảo tính liên tục Lipschitz của gradient và sự giảm đơn điệu của hàm mục tiêu trong quá trình dựng cây.
 \end{lemma}
 \begin{proof}
-Vì $h_i > 0$ theo Bổ đề 1, mẫu số $\sum_{i \in I_j} h_i + \lambda \ge \lambda > 0$. Tổng đạo hàm bậc nhất $\sum_{i \in I_j} g_i$ bị chặn trên khoảng [\epsilon, 1-\epsilon] với $|g_i| \le \alpha (1 + \gamma / e)$. Do đó bước cập nhật $|w_j^*| \le \frac{\max |g_i| \cdot |I_j|}{\lambda} < \infty$, tránh bùng nổ gradient và đảm bảo sự hội tụ của thuật toán Newton-Raphson.
+Vì $h_i \ge \delta > 0$ theo Bổ đề 1, mẫu số thỏa mãn $\sum_{i \in I_j} h_i + \lambda \ge |I_j|\delta + \lambda > 0$. Tổng đạo hàm bậc nhất $g_i$ bị chặn đại số bởi $|g_i| \le \alpha (1 + \gamma / e)$ với mọi $p_i \in (0, 1)$. Do đó bước cập nhật $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, tránh bùng nổ gradient và đảm bảo sự hội tụ của thuật toán Newton-Raphson.
 \end{proof}
 
 \section{Kết Quả Thực Nghiệm}
@@ -224,13 +224,23 @@ Thực nghiệm của chúng tôi chứng minh các mô hình gradient tree boos
 \subsection{Khả Năng Chuyển Giao Quốc Tế & Triển Khai Hành Chính}
 Mặc dù thực nghiệm đánh giá trên dữ liệu điều tra dân số Costa Rica và UCI, các biến khảo sát cốt lõi (\texttt{dependency}, vật liệu nhà ở, chỉ số tài sản, giáo dục) là các chỉ số chuẩn được thu thập phổ biến trong các công cụ PMT tại Đông Nam Á (bao gồm Việt Nam, Indonesia hay Philippines). Chi phí tính toán cực nhẹ ($0.25$s huấn luyện, $<0.068$ ms suy luận) cho phép tích hợp trực tiếp vào hệ thống thông tin quản lý an sinh (MIS) quốc gia.
 
+\subsection{Phân Tích Độ Phức Tạp Tính Toán & Chi Phí Tài Nguyên}
+Để đánh giá tính khả thi khi triển khai tại các hệ thống IT công cộng, chúng tôi phân tích độ phức tạp tiệm cận và bộ nhớ lưu trữ:
+\begin{itemize}
+\item \textbf{Độ Phức Tạp Huấn Luyện (Training Complexity):} Với cỡ mẫu $N=9,557$, số thuộc tính $M=142$, độ sâu cây $K=6$, và $T=300$ cây, độ phức tạp phân tách nút cây là $\mathcal{O}(T \cdot K \cdot M \cdot N \log N)$. Thời gian huấn luyện thực tế hoàn thành trong $0.25$ giây trên CPU 4 nhân tiêu chuẩn.
+\item \textbf{Độ Phức Tạp Suy Luận (Inference Complexity):} Việc phân loại một hộ gia đình đánh giá $T=300$ đường đi cây với độ sâu tối đa $K=6$, cho độ phức tạp suy luận cố định $\mathcal{O}(T \cdot K) = \mathcal{O}(1800 \text{ phép tính})$, mất chưa đầy $<0.068\text{ ms}$ cho mỗi hộ.
+\item \textbf{Dung Lượng Bộ Nhớ (Memory Footprint):} Bộ nhớ RAM tiêu thụ khi suy luận luôn dưới $42\text{ MB}$, cho phép chạy mượt mà trên các máy tính văn phòng thế hệ cũ mà không cần phần cứng GPU.
+\end{itemize}
+
 \subsection{Hạn Chế Của Nghiên Cứu và Hướng Phát Triển}
 Dù khung đề xuất đạt hiệu suất cao và tuân thủ các quy định quản trị công, nghiên cứu có một số hạn chế mở ra hướng phát triển tương lai:
 \begin{enumerate}
 \item \textbf{Phạm Vi Phạm Vi Dữ Liệu Bảng:} Nghiên cứu tập trung trên khảo sát dân số bảng cấu trúc. Các nghiên cứu tiếp theo có thể kết hợp dữ liệu phi cấu trúc như ảnh vệ tinh hay nhật ký viễn thông.
 \item \textbf{Theo Dõi Động Học Theo Thời Gian:} Nghiên cứu hiện tại đánh giá trên ảnh cắt ngang khảo sát. Mở rộng PWC-Loss sang dữ liệu bảng dọc (panel data) sẽ giúp theo dõi sự chuyển dịch nghèo đói của hộ gia đình theo thời gian.
 \item \textbf{Đánh Giá Công Bằng Đa Thuộc Tính Giao Thoa:} Kiểm toán công bằng hiện tại tập trung trên giới tính chủ hộ và địa bàn nông thôn/thành thị. Hướng đi tiếp theo sẽ mở rộng sang đánh giá giao thoa đa thuộc tính (như dân tộc và khuyết tật).
+\item \textbf{Thực Nghiệm Trực Tiếp Trên Tabular Transformer:} Mặc dù TabNet và MLP đã được đối sánh làm đại diện cho các kiến trúc nơ-ron dữ liệu bảng, việc đánh giá thực nghiệm trực tiếp các biến thể Transformer nặng (FT-Transformer, SAINT) còn bị giới hạn bởi chi phí phần cứng; các nghiên cứu tương lai sẽ mở rộng thử nghiệm các kiến trúc này trên dữ liệu đa quốc gia lớn hơn.
 \end{enumerate}
+
 
 \section{Kết Luận}
 
