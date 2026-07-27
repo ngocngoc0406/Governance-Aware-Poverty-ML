@@ -11,8 +11,6 @@
 \usepackage{xcolor}
 \usepackage[utf8]{inputenc}
 \usepackage[vietnamese]{babel}
-\usepackage[hyphens]{url}
-\usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{placeins}
@@ -216,9 +214,6 @@ XGBoost + Isotonic Reg (Post-Hoc) & 0.951 & 15.3\% & 0.0539 & 0.0149 \\
 \subsection{Khả Năng Chuyển Giao Quốc Tế & Triển Khai Hành Chính}
 Mặc dù thực nghiệm đánh giá trên dữ liệu điều tra dân số Costa Rica và UCI, các biến khảo sát cốt lõi (\texttt{dependency}, vật liệu nhà ở, chỉ số tài sản, giáo dục) là các chỉ số chuẩn được thu thập phổ biến trong các công cụ PMT tại Đông Nam Á (bao gồm Việt Nam, Indonesia hay Philippines). Chi phí tính toán cực nhẹ ($0.25$s huấn luyện, $<0.068$ ms suy luận) cho phép tích hợp trực tiếp vào hệ thống thông tin quản lý an sinh (MIS) quốc gia.
 
-\subsection{Tính Tái Lập & Cam Kết Mã Nguồn Mở}
-Để đảm bảo tính tái lập 100\%, toàn bộ mã nguồn—bao gồm tiền xử lý dữ liệu, cài đặt hàm mục tiêu custom PWC-Loss XGBoost, tìm kiếm lưới 5x5, kiểm toán công bằng, và quy trình giải thích phản thực—đã được công bố công khai tại: \href{https://github.com/ngocngoc0406/Governance-Aware-Poverty-ML}{\texttt{github.com/ngocngoc0406/}}\\ \href{https://github.com/ngocngoc0406/Governance-Aware-Poverty-ML}{\texttt{Governance-Aware-Poverty-ML}}.
-
 \subsection{Hạn Chế Của Nghiên Cứu và Hướng Phát Triển}
 Dù khung đề xuất đạt hiệu suất cao và tuân thủ các quy định quản trị công, nghiên cứu có một số hạn chế mở ra hướng phát triển tương lai:
 \begin{enumerate}
@@ -229,7 +224,7 @@ Dù khung đề xuất đạt hiệu suất cao và tuân thủ các quy định
 
 \section{Kết Luận}
 
-Thay thế các công thức PMT cứng nhắc bằng quy trình học máy được hiệu chuẩn, công bằng và có khả năng giải thích giúp tăng cường đáng kể độ chính xác định hướng và trách nhiệm giải trình hành chính. Trên 9 thuật toán được đối sánh, XGBoost hiệu chuẩn theo PWC đạt độ chính xác 95,7\%, ROC-AUC 0.979, Brier score thấp nhất (0,0366) và ECE thấp nhất (0,0251). Kiểm toán hiệu chuẩn in-tree, kiểm toán độ ổn định đa hạt giống ($0.9568 \pm 0.0012$), phân tích phản thực hành chính, phân tích lỗi định tính, xác thực đa tập dữ liệu (UCI Adult Income), phân tích nhạy cảm lưới 5x5, và độ ổn định xếp hạng SHAP 95.8\% ($\rho = 0.9575$) khẳng định tính mạnh mẽ và khả năng tổng quát hóa thực nghiệm của khung đề xuất.
+Thay thế các công thức PMT cứng nhắc bằng quy trình học máy được hiệu chuẩn, công bằng và có khả năng giải thích giúp tăng cường đáng kể độ chính xác định hướng và trách nhiệm giải trình hành chính. Trên 9 thuật toán được đối sánh, XGBoost hiệu chuẩn theo PWC đạt độ chính xác 95,7\%, ROC-AUC 0.979, Brier score thấp nhất (0,0366) và ECE thấp nhất (0,0251). Kiểm toán hiệu chuẩn in-tree, kiểm toán độ ổn định đa hạt giống ($0.9568 \pm 0.0012$), phân tích phản thực hành chính, phân tích lỗi định tính, xác thực đa tập dữ liệu (UCI Adult Income), phân tích nhạy cảm lưới 5x5, và độ ổn định xếp hạng SHAP 95.8\% ($\rho = 0.9575$) khẳng định tính mạnh mẽ và khả năng tổng quát hóa thực nghiệm của khung đề xuất. Để thúc đẩy nghiên cứu mở và khả năng tái lập, toàn bộ mã nguồn cài đặt và quy trình xử lý dữ liệu sẽ được công khai ngay sau khi bài báo được chấp nhận.
 
 \FloatBarrier
 \begin{thebibliography}{00}
