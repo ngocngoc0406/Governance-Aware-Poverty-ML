@@ -1,0 +1,15 @@
+Variable Name,Description,Data Type
+v2a1,Monthly rent payment,Numeric
+hacdor,Overcrowding by bedrooms,Binary
+rooms,Number of rooms in dwelling,Numeric
+hacapo,Overcrowding by rooms,Binary
+v14a,Sanitary toilet facility,Binary
+reservdoc,Years of education (reservation),Numeric
+bedroom,Number of bedrooms,Numeric
+overcrowding,Overcrowding ratio,Numeric
+dependency,Dependency rate ratio,Numeric
+qsefra,Household members receiving social aid,Numeric
+edjefe,Years of education of male head,Numeric
+edjefa,Years of education of female head,Numeric
+meaneduc,Mean years of education for adults (18+),Numeric
+SQBmeaned,Square of mean education,Numeric

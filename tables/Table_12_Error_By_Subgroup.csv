@@ -1,0 +1,19 @@
+# By Poverty Level
+Original Class,N,Error Rate,Correct
+Extreme Poverty,150,7.3%,92.7%
+Moderate Poverty,321,8.4%,91.6%
+Vulnerable,233,8.2%,91.8%
+Non-Vulnerable,1208,2.8%,97.2%
+
+# By Education
+Education Level,N,Error Rate
+None,770,5.6%
+Primary (1-6),550,6.2%
+Secondary (7-12),379,3.2%
+Higher (13+),213,0.9%
+
+# By Area
+Area,N,Error Rate,FNR (Exclusion)
+Urban,1380,4.1%,9.1%
+Rural,532,6.4%,6.0%
+

@@ -1,0 +1,6 @@
+Model,Brier Score
+XGBoost (Welfare),0.0399
+XGBoost,0.0403
+Logistic Regression,0.1266
+EBM,0.1103
+Random Forest,0.0471

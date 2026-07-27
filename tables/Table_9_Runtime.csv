@@ -1,0 +1,8 @@
+Model,Train Time (s),Inference Time (s)
+Logistic Regression,0.128 ± 0.014,0.004 ± 0.001
+Random Forest,0.270 ± 0.030,0.093 ± 0.009
+XGBoost,0.245 ± 0.036,0.034 ± 0.002
+XGBoost (Welfare),0.226 ± 0.014,0.033 ± 0.001
+LightGBM,0.416 ± 0.552,0.011 ± 0.001
+CatBoost,0.530 ± 0.067,0.009 ± 0.001
+EBM,17.668 ± 0.000,0.008 ± 0.000

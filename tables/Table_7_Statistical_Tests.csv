@@ -1,0 +1,7 @@
+Model 1,Model 2,Chi-squared,p-value,Significance
+XGBoost (Welfare),Logistic Regression,180.56,3.65e-41,Yes
+XGBoost (Welfare),Random Forest,0.65,0.421,No
+XGBoost (Welfare),XGBoost,0.01,0.909,No
+XGBoost (Welfare),LightGBM,11.56,6.75e-04,Yes
+XGBoost (Welfare),CatBoost,16.27,5.50e-05,Yes
+XGBoost (Welfare),EBM,137.26,1.06e-31,Yes

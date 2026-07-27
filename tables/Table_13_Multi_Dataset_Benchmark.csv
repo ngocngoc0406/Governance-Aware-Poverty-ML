@@ -1,0 +1,8 @@
+Model,Accuracy,Recall,ROC-AUC,Brier Score,ECE
+Logistic Regression,0.818,0.446,0.85,0.1256,0.0165
+Random Forest,0.854,0.632,0.903,0.1043,0.0227
+Deep Tabular (MLP),0.818,0.638,0.873,0.1354,0.0941
+XGBoost (Standard),0.861,0.647,0.921,0.0952,0.0218
+LightGBM,0.866,0.655,0.925,0.0928,0.0125
+CatBoost,0.863,0.633,0.923,0.0939,0.0114
+XGBoost (PWC-Loss Proposed),0.862,0.714,0.923,0.0966,0.0285
