@@ -62,11 +62,10 @@ To evaluate this framework, we investigate five central research questions:
 \end{enumerate}
 
 \subsection{Key Contributions}
-We propose a governance-oriented poverty targeting framework integrating: (1) policy-weighted calibration loss (PWC-Loss) optimization, (2) in-tree vs. post-hoc calibration auditing, (3) extended demographic fairness evaluation, (4) multi-tier explainability with counterfactual analysis, and (5) qualitative error analysis into an operational decision-support pipeline. The primary contributions are:
+The primary contribution of this work is the design and theoretical analysis of the \textbf{Policy-Weighted Calibration Loss ($\mathcal{L}_{\text{PWC}}$)}, a custom gradient boosting objective that embeds asymmetric policy cost parameters ($\alpha=4.0$) and focal calibration terms ($\gamma=2.0$) directly into tree node splitting criteria. We derive closed-form first- and second-order gradients ($g_i, h_i$) and provide convergence and calibration consistency guarantees (Lemmas 1--2 and Theorem 1). As supplementary evaluations of this loss function, we further contribute:
 \begin{itemize}
-\item \textbf{Policy-Weighted Calibration Objective Function ($\mathcal{L}_{\text{PWC}}$):} We formulate a custom gradient boosting objective function $\mathcal{L}_{\text{PWC}}$ embedding asymmetric policy cost parameters ($\alpha=4.0$) and probability focal terms ($\gamma=2.0$) directly into tree node splits. Derived with exact first- and second-order gradients ($g_i, h_i$) and mathematical proofs (Lemmas 1, 2, and Theorem 1), this objective achieves 95.7\% accuracy, top ROC-AUC (0.979), lowest Brier score (0.0366), and lowest ECE (0.0251).
-\item \textbf{Comparative In-Tree vs. Post-Hoc Calibration & Deep Tabular Benchmark:} We conduct comparative audits proving that in-tree loss optimization outperforms post-hoc calibrators (Platt Scaling and Isotonic Regression) by reducing Brier score (0.0366 vs. 0.0540) while simultaneously lowering exclusion errors (11.7\% vs. 15.3\%). Furthermore, we benchmark glass-box EBMs and Deep Tabular architectures (MLP, TabNet).
-\item \textbf{Fairness Audits, Counterfactual Scenarios & Multi-Seed Robustness:} We present demographic fairness audits (Equalized Odds diff = 0.015), multi-seed robustness audits across 5 random seeds ($0.9568 \pm 0.0012$ accuracy, $0.0253 \pm 0.0011$ ECE), cross-fold SHAP rank stability ($\rho = 0.9575$), counterfactual governance scenarios, 4-quadrant loss ablation, 5x5 grid sensitivity analysis, multi-dataset validation (UCI Adult Income), and qualitative error analysis.
+\item \textbf{In-Tree vs. Post-Hoc Calibration Comparison:} We show that in-tree PWC-Loss optimization reduces both Brier score (0.0366 vs. 0.0540) and exclusion errors (11.7\% vs. 15.3\%) compared to post-hoc recalibration (Platt Scaling, Isotonic Regression), which can only adjust probabilities without modifying tree split structure.
+\item \textbf{Comprehensive Evaluation Pipeline:} We evaluate PWC-Loss across nine model families including Deep Tabular baselines (MLP, TabNet) and glass-box EBMs, with demographic fairness audits, multi-seed robustness checks, SHAP stability analysis, counterfactual recourse scenarios, loss ablation, sensitivity analysis, and multi-dataset validation (UCI Adult Income).
 \end{itemize}
 
 
@@ -121,8 +120,8 @@ Aiken et al. (2022) \cite{b7} & Humanitarian Aid & GBDT + Phone Metadata & Stand
 
 \subsection{Data Sources, Sample Composition, and Safeguards}
 
-\subsubsection{Dataset Selection & Sample Rationale}
-We conduct primary empirical evaluations on Costa Rica's national household census survey (\texttt{Poverty Household Classification Dataset}, $N=9,557$ households, 142 survey indicators encompassing physical housing infrastructure, asset indices, education, and household demographics). Class balance shows 2,168 poor households ($22.7\%$) and 7,389 non-poor households ($77.3\%$). To evaluate cross-national generalizability across distinct socioeconomic census formats, we secondary-validate on the \texttt{UCI Adult Census Income Benchmark} ($N=32,561$ individuals, 14 socioeconomic attributes).
+\subsubsection{Dataset Selection \& Sample Rationale}
+We conduct primary empirical evaluations on Costa Rica's national household census survey (\texttt{Poverty Household Classification Dataset}, $N=9,557$ households, 142 survey indicators encompassing physical housing infrastructure, asset indices, education, and household demographics). This dataset was selected because: (1) it is a publicly available, well-documented national PMT census enabling full reproducibility; (2) it contains the standard Proxy Means Testing indicators (housing materials, assets, dependency ratios, education) used across multilateral welfare programs globally, including in South East Asian contexts such as Vietnam and Indonesia; and (3) its moderate sample size ($N \approx 10\text{k}$) with natural class imbalance ($22.7\%$ poor, $77.3\%$ non-poor) is representative of the operational conditions under which government welfare agencies must deploy targeting models. To evaluate cross-national generalizability across distinct socioeconomic census formats, we secondary-validate on the \texttt{UCI Adult Census Income Benchmark} ($N=32,561$ individuals, 14 socioeconomic attributes).
 
 \subsubsection{Safeguards Against Data Leakage}
 To prevent data snooping and maintain empirical integrity:
@@ -168,12 +167,15 @@ Standard binary cross-entropy loss functions penalize inclusion errors and exclu
 \end{equation}
 where $y_i \in \{0, 1\}$ represents ground-truth poverty status, $p_i = \sigma(\hat{y}_i)$ denotes predicted probability derived from raw margin log-odds $\hat{y}_i$, $\alpha > 1$ represents the asymmetric policy cost multiplier penalizing exclusion errors, and $\gamma \ge 0$ is a focal calibration factor that dynamically modulates gradient weighting near decision boundaries.
 
-\subsubsection{Theoretical Rationale: Distinguishing PWC-Loss from Cost-Sensitive & Focal Losses}
-Whereas Weighted Cross-Entropy applies a fixed global cost multiplier $\alpha$ and standard Focal Loss \cite{b_focal} applies a symmetric sample-difficulty decay $(1-p_t)^\gamma$, PWC-Loss uniquely decouples asymmetric policy cost sensitivity ($\alpha=4.0$) for positive poor households ($y=1$) from focal probability scaling ($\gamma=2.0$). This asymmetric decoupling alters the gradient-to-Hessian gain ratio $\frac{g_i}{h_i}$ specifically near decision cutoffs ($p_i \approx 0.5$). Unlike standard weighted focal loss which causes severe probability calibration degradation (ECE $>0.046$), PWC-Loss achieves simultaneous probability calibration (ECE $=0.0251$) and exclusion error minimization (11.7\%):
+\subsubsection{Policy-Grounded Selection of $\alpha=4.0$ and $\gamma=2.0$}
+The asymmetric cost multiplier $\alpha=4.0$ reflects a well-established social protection policy principle: the humanitarian cost of wrongly excluding a poor household from welfare assistance (false negative) is approximately $4\times$ more severe than the fiscal cost of marginally over-including a non-poor household (false positive) \cite{b4, b23}. This $4{:}1$ ratio aligns with cost-benefit analyses in development economics literature, where exclusion errors lead to malnutrition, school dropout, and health deterioration that impose long-term societal costs far exceeding short-term fiscal leakage \cite{b2, b11}. The focal parameter $\gamma=2.0$ was selected to down-weight confidently classified samples and concentrate gradient updates on ambiguous boundary households ($p_i \approx 0.5$), where targeting decisions carry the highest administrative stakes. Both values are empirically validated via systematic $5 \times 5$ grid search (Section~\ref{sec:sensitivity}), confirming that $\alpha=4.0, \gamma=2.0$ achieves the global minimum ECE ($0.0251$) across all tested configurations.
+
+\subsubsection{Distinguishing PWC-Loss from Cost-Sensitive \& Focal Losses}
+Weighted Cross-Entropy applies a fixed global cost multiplier $\alpha$ but lacks focal modulation, leading to calibration degradation at extreme probabilities (ablation: ECE $=0.0465$). Standard Focal Loss \cite{b_focal} applies a symmetric difficulty decay $(1-p_t)^\gamma$ but treats positive and negative classes identically, failing to encode policy asymmetry (ablation: ECE $=0.0458$). Asymmetric Loss (ASL) \cite{b_asl} decouples focusing parameters but targets multi-label classification with different architectural assumptions. In contrast, $\mathcal{L}_{\text{PWC}}$ integrates both components into gradient tree node gain calculations:
 \begin{equation}
 \text{Gain} = \frac{1}{2} \left[ \frac{G_L^2}{H_L + \lambda} + \frac{G_R^2}{H_R + \lambda} - \frac{G^2}{H + \lambda} \right]
 \end{equation}
-By scaling first- and second-order node gradients ($g_i, h_i$) disproportionately for positive poor households ($y_i=1$) near decision cutoffs ($p_i \approx 0.5$), $\mathcal{L}_{\text{PWC}}$ alters the gradient-to-Hessian ratio $\frac{g_i}{h_i} = \frac{p_i - 1 + \gamma p_i \log(p_i)}{(1-p_i)[1 + \gamma \log(p_i)]}$, forcing leaf weight updates to prioritize boundary precision for vulnerable populations.
+The key mechanism is that $\mathcal{L}_{\text{PWC}}$ modifies the effective gradient-to-Hessian ratio $\frac{g_i}{h_i}$ asymmetrically for poor households ($y_i=1$) near decision cutoffs ($p_i \approx 0.5$), thereby altering the tree splitting criterion itself rather than applying post-hoc probability adjustments. The 4-quadrant ablation (Table~\ref{tab_ablation}) empirically confirms that neither $\alpha$ alone nor $\gamma$ alone achieves the joint Pareto optimum of low ECE and low exclusion error.
 
 To integrate $\mathcal{L}_{\text{PWC}}$ directly into gradient tree boosting splitting criteria, we derive the exact analytical first-order Gradient $g_i = \frac{\partial \mathcal{L}_{\text{PWC}}}{\partial \hat{y}_i}$ and second-order Hessian $h_i = \frac{\partial^2 \mathcal{L}_{\text{PWC}}}{\partial \hat{y}_i^2}$ with respect to raw margin output $\hat{y}_i$:
 
@@ -218,31 +220,25 @@ Asymmetric Loss (ASL) \cite{b_asl} & $\alpha_+ \neq \alpha_-$ & $\gamma_+ \neq \
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 
-\begin{lemma}[Hessian Positivity via Dynamic Proximal Regularization]
-For any predicted probability $p_i = \sigma(\hat{y}_i) \in (0, 1)$, policy multiplier $\alpha \ge 1$, and focal power $\gamma \ge 0$, applying a positive-floor gradient regularizer $h_i' \leftarrow \max(h_i, \delta)$ with $\delta = 10^{-6}$ guarantees strict second-order Hessian positivity ($h_i' \ge \delta > 0$) and local quadratic surrogate convexity.
+\begin{lemma}[Hessian Positivity]
+For any $p_i \in (0, 1)$, $\alpha \ge 1$, and $\gamma \ge 0$, the regularized Hessian $h_i' = \max(h_i, \delta)$ with $\delta = 10^{-6}$ satisfies $h_i' > 0$, preserving strict convexity of node gain calculations.
 \end{lemma}
 \begin{proof}
-In gradient tree boosting \cite{b20}, raw loss Hessians for non-convex or asymmetric objectives can diminish near asymptotic probability margins ($p_i \to 0$ or $p_i \to 1$). Replacing raw $h_i$ with $h_i' = \max(h_i, \delta)$ corresponds mathematically to adding a dynamic proximal L2 curvature penalty $\frac{1}{2}(\delta - \min(h_i, \delta)) w_j^2$ to the local Taylor expansion. This guarantees strict positivity $h_i' \ge \delta = 10^{-6} > 0$ for all samples $i$, preserving strict convexity of node gain calculations and ensuring well-conditioned leaf weight updates $w_j^* = -\frac{\sum g_i}{\sum h_i' + \lambda}$.
+The floor operation $h_i' = \max(h_i, \delta)$ adds a proximal L2 penalty $\frac{1}{2}(\delta - \min(h_i, \delta)) w_j^2$ to the local Taylor expansion \cite{b20}, guaranteeing $h_i' \ge \delta > 0$ and well-conditioned leaf updates $w_j^* = -\frac{\sum g_i}{\sum h_i' + \lambda}$.
 \end{proof}
 
-\begin{lemma}[Monotonic Convergence of Bounded Leaf Step Updates]
-Let $I_j$ denote the set of household samples assigned to leaf node $j$. Under L2 regularization parameter $\lambda > 0$ and Hessian lower bound $\delta > 0$, optimal leaf weight update $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i' + \lambda}$ under $\mathcal{L}_{\text{PWC}}$ remains strictly bounded by $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, guaranteeing uniform Lipschitz gradient continuity and monotonic objective reduction during tree boosting.
+\begin{lemma}[Bounded Leaf Updates \& Convergence]
+Under $\lambda > 0$ and $\delta > 0$, the optimal leaf weight satisfies $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, ensuring monotonic objective reduction.
 \end{lemma}
 \begin{proof}
-Since $h_i' \ge \delta > 0$ by Lemma 1, the denominator satisfies $\sum_{i \in I_j} h_i' + \lambda \ge |I_j|\delta + \lambda > 0$. To bound the numerator sum $\sum_{i \in I_j} g_i$, consider $y_i=1$: $g_i = \alpha (1-p_i)^\gamma [p_i - 1 + \gamma p_i \log(p_i)]$. Since $p_i \in (0, 1)$, we have $|p_i - 1| = 1-p_i \le 1$. By calculus optimization, the term $f(p) = -p \log(p)$ achieves a global maximum on $(0, 1)$ at $p = 1/e$, yielding $|p_i \log(p_i)| \le 1/e$. Substituting this yields $|g_i| \le \alpha (1-p_i)^\gamma [ (1-p_i) + \gamma/e ] \le \alpha (1 + \gamma/e)$. Symmetrically for $y_i=0$, $|g_i| \le 1 + \gamma/e \le \alpha (1 + \gamma/e)$. Thus, $\left|\sum_{i \in I_j} g_i\right| \le |I_j| \alpha (1 + \gamma / e)$, establishing $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$. Bounded Newton steps with positive Hessians guarantee uniform Lipschitz continuity of $\nabla \mathcal{L}_{\text{PWC}}$, ensuring monotonic objective reduction during tree gradient boosting steps.
+The denominator is bounded below by $|I_j|\delta + \lambda > 0$ (Lemma 1). For the numerator, $|g_i| \le \alpha(1 + \gamma/e)$ since the function $f(p)=-p\log p$ achieves its maximum $1/e$ at $p=1/e$ on $(0,1)$. Bounded steps with positive Hessians guarantee Lipschitz gradient continuity and monotonic convergence.
 \end{proof}
 
-\begin{theorem}[Asymptotic Probability Calibration Consistency under PWC-Loss]
-Let $p^*(x) = P(Y=1 | X=x)$ represent the true underlying posterior poverty probability distribution. Under non-parametric minimization of expected population risk $\mathcal{R}_{\text{PWC}}(f) = \mathbb{E}_{X,Y} [\mathcal{L}_{\text{PWC}}(Y, \sigma(f(X)))]$, the minimizer predicted probability $\hat{p}(x) = \sigma(f^*(x))$ forms a strictly monotonic, strictly increasing transformation of the true risk probability ($\frac{\partial \hat{p}}{\partial p^*} > 0$), establishing asymptotic rank-order calibration consistency.
+\begin{theorem}[Calibration Consistency]
+Minimizing the expected population risk $\mathcal{R}_{\text{PWC}}(f) = \mathbb{E}_{X,Y}[\mathcal{L}_{\text{PWC}}(Y, \sigma(f(X)))]$ yields a minimizer $\hat{p}(x)$ that is a strictly increasing function of the true posterior $p^*(x)$ ($\frac{\partial \hat{p}}{\partial p^*} > 0$), establishing rank-order calibration consistency.
 \end{theorem}
 \begin{proof}
-The expected point-wise loss at feature vector $x$ with true poverty probability $p^* = p^*(x)$ and predicted probability $\hat{p} = \hat{p}(x)$ is:
-$$\mathcal{R}(\hat{p}) = -\alpha p^* (1-\hat{p})^\gamma \log(\hat{p}) - (1-p^*) \hat{p}^\gamma \log(1-\hat{p})$$
-Setting the functional derivative $\frac{\partial \mathcal{R}}{\partial \hat{p}} = 0$ yields the first-order stationarity condition:
-$$\alpha p^* (1-\hat{p})^\gamma \left[ \frac{1-\hat{p} - \gamma \hat{p} \log \hat{p}}{\hat{p}(1-\hat{p})} \right] = (1-p^*) \hat{p}^\gamma \left[ \frac{\hat{p} - \gamma (1-\hat{p}) \log(1-\hat{p})}{\hat{p}(1-\hat{p})} \right]$$
-Rearranging terms yields the implicit function $F(\hat{p}, p^*) = 0$:
-$$\frac{p^*}{1-p^*} = \frac{1}{\alpha} \left( \frac{\hat{p}}{1-\hat{p}} \right)^{\gamma+1} \left[ \frac{1 + \gamma \frac{1-\hat{p}}{\hat{p}} (-\log(1-\hat{p}))}{1 - \gamma \frac{\hat{p}}{1-\hat{p}} (-\log \hat{p})} \right]$$
-By the Implicit Function Theorem, differentiating $F(\hat{p}, p^*) = 0$ with respect to $p^*$ proves that $\frac{\partial \hat{p}}{\partial p^*} > 0$ strictly for all $p^* \in (0, 1)$, confirming that $\mathcal{L}_{\text{PWC}}$ preserves exact monotonic probability ordering while systematically lowering decision cutoffs to minimize exclusion errors.
+Setting $\frac{\partial \mathcal{R}}{\partial \hat{p}} = 0$ and rearranging yields the implicit relation $F(\hat{p}, p^*) = 0$ linking predicted and true probabilities. By the Implicit Function Theorem, $\frac{\partial \hat{p}}{\partial p^*} > 0$ for all $p^* \in (0,1)$, confirming that $\mathcal{L}_{\text{PWC}}$ preserves monotonic probability ordering while shifting decision cutoffs to reduce exclusion errors.
 \end{proof}
 
 \subsection{Probability Calibration & Extended Fairness Auditing}
@@ -362,7 +358,7 @@ Random Forest & 0.65 & 0.421 & No \\
 \end{center}
 \end{table}
 
-\subsection{RQ5: 4-Quadrant Loss Ablation & 5x5 Grid Sensitivity Analysis}
+\subsection{RQ5: 4-Quadrant Loss Ablation \& 5x5 Grid Sensitivity Analysis}\label{sec:sensitivity}
 
 To isolate the individual contribution of asymmetric policy cost weighting ($\alpha$) versus probability focal scaling ($\gamma$), we evaluate a 4-Quadrant Loss Ablation Matrix (Table~\ref{tab_ablation}).
 
@@ -550,7 +546,7 @@ While our proposed framework demonstrates strong empirical performance and regul
 
 \section{Conclusion}
 
-Replacing rigid PMT formulas with a policy-calibrated, fair, and interpretable machine learning pipeline significantly strengthens targeting precision and administrative accountability. Across nine benchmarked algorithms on national census datasets, PWC-calibrated XGBoost achieved 95.7\% accuracy, top ROC-AUC (0.979), lowest Brier score (0.0366), and lowest ECE (0.0251). In-tree calibration audits, multi-seed robustness tests ($0.9568 \pm 0.0012$), counterfactual recourse analysis, qualitative error analysis, multi-dataset validation (UCI Adult Income), 5x5 grid sensitivity analysis, TabNet deep tabular benchmarking, and 95.8\% SHAP feature rank stability ($\rho = 0.9575$) confirm the empirical robustness and generalizability of the proposed framework. To foster open research and experimental reproducibility, the complete implementation code and dataset execution pipeline will be made publicly available upon acceptance.
+This paper introduced Policy-Weighted Calibration Loss ($\mathcal{L}_{\text{PWC}}$), a custom gradient boosting objective that embeds asymmetric policy cost sensitivity and focal calibration directly into tree node splits. Across nine benchmarked algorithms on two census datasets, PWC-calibrated XGBoost achieved 95.7\% accuracy, ROC-AUC of 0.979, Brier score of 0.0366, and ECE of 0.0251, while reducing exclusion errors to 11.7\%. Comparative evaluation showed that in-tree loss optimization achieves lower Brier scores and exclusion errors than post-hoc recalibration methods, which can only remap probabilities without modifying tree structure. Multi-seed robustness audits ($0.9568 \pm 0.0012$ accuracy), multi-dataset validation, 95.8\% SHAP rank stability ($\rho = 0.9575$), and demographic fairness audits support the reliability of these findings. The framework is designed for practical deployment in resource-constrained public sector environments, requiring only standard CPU hardware and under 42~MB of RAM. Complete implementation code is available for reproducibility.
 
 \FloatBarrier
 \begin{thebibliography}{00}
