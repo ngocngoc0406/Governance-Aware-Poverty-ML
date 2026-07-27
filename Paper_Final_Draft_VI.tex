@@ -11,6 +11,8 @@
 \usepackage{xcolor}
 \usepackage[utf8]{inputenc}
 \usepackage[vietnamese]{babel}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{placeins}
@@ -26,7 +28,7 @@
 \maketitle
 
 \begin{abstract}
-Xác định hộ nghèo là trụ cột an sinh xã hội, nhưng phương pháp Kiểm Tra Đại Diện (PMT) truyền thống thường gây sai lệch phân bổ do các giả định tuyến tính cứng nhắc. Dù học máy (ML) cải thiện độ chính xác dự đoán, các quy trình ra quyết định hộp đen tạo ra thách thức về minh bạch hành chính, hiệu chuẩn xác suất và công bằng nhân khẩu học. Chúng tôi đề xuất khung học máy hướng quản trị giới thiệu hàm mục tiêu Policy-Weighted Calibration Loss ($\mathcal{L}_{\text{PWC}}$) tích hợp trực tiếp tham số chi phí chính sách bất đối xứng ($\alpha=4.0$) và thành phần hội tụ xác suất ($\gamma=2.0$) vào các điểm phân tách cây gradient. Đánh giá đối sánh 9 thuật toán phân loại trên dữ liệu điều tra dân số quốc gia (bao gồm kiến trúc nơ-ron chuyên biệt TabNet), XGBoost hiệu chuẩn theo PWC đạt độ chính xác 95.7\%, ROC-AUC cao nhất (0.979), Brier score thấp nhất (0.0366) và ECE thấp nhất (0.0251), cắt giảm sai số loại trừ xuống 11.7\% ($p < 0.001$). Đánh giá so sánh chứng minh tối ưu hóa loss trong cây vượt trội hơn các phương pháp hiệu chuẩn post-hoc (Platt Scaling và Isotonic Regression) khi vừa giảm Brier score vừa giảm sai số loại trừ. Kiểm toán độ ổn định đa hạt giống ($5$ random seeds) xác nhận độ tin cậy thực nghiệm cao ($0.9568 \pm 0.0012$ độ chính xác, $0.0253 \pm 0.0011$ ECE). Xác thực đa tập dữ liệu trên UCI Adult Income khẳng định tính tổng quát hóa cross-national (Recall = 71.4\%), trong khi kiểm toán độ ổn định qua các fold kiểm tra đạt 95.8\% độ tương quan thứ tự đặc trưng ($\rho=0.9575$). Kiểm toán nhân khẩu học xác nhận chênh lệch giới tính được giảm thiểu, duy trì Cơ Hội Bình Đẳng (EO diff = 0.008) và mức chênh lệch Equalized Odds thấp (0.015). Khung làm việc này cung cấp quy trình hỗ trợ ra quyết định toàn diện cho việc triển khai AI có trách nhiệm giải trình trong các chương trình trợ cấp công cộng.
+Xác định hộ nghèo là trụ cột an sinh xã hội, nhưng phương pháp Kiểm Tra Đại Diện (PMT) truyền thống thường gây sai lệch phân bổ do các giả định tuyến tính cứng nhắc. Dù học máy (ML) cải thiện độ chính xác dự đoán, các quy trình ra quyết định hộp đen tạo ra thách thức về minh bạch hành chính, hiệu chuẩn xác suất và công bằng nhân khẩu học. Chúng tôi đề xuất khung học máy hướng quản trị giới thiệu hàm mục tiêu Policy-Weighted Calibration Loss ($\mathcal{L}_{\text{PWC}}$) tích hợp trực tiếp tham số chi phí chính sách bất đối xứng ($\alpha=4.0$) và thành phần hội tụ xác suất ($\gamma=2.0$) vào các điểm phân tách cây gradient. Đánh giá đối sánh 9 thuật toán phân loại trên dữ liệu điều tra dân số quốc gia (bao gồm kiến trúc nơ-ron chuyên biệt TabNet), XGBoost hiệu chuẩn theo PWC đạt độ chính xác 95.7\%, ROC-AUC cao nhất (0.979), Brier score thấp nhất (0.0366) và ECE thấp nhất (0.0251), cắt giảm sai số loại trừ xuống 11.7\% ($p < 0.001$). Đánh giá so sánh chứng minh tối ưu hóa loss trong cây vượt trội hơn các phương pháp hiệu chuẩn post-hoc (Platt Scaling và Isotonic Regression) khi vừa giảm Brier score vừa giảm sai số loại trừ. Kiểm toán độ ổn định đa hạt giống ($5$ random seeds) xác nhận độ tin cậy thực nghiệm cao ($0.9568 \pm 0.0012$ độ chính xác, $0.0253 \pm 0.0011$ ECE). Xác thực đa tập dữ liệu trên UCI Adult Income khẳng định tính tổng quát hóa cross-national (Recall = 71.4\%), trong khi kiểm toán độ ổn định qua các fold kiểm tra đạt 95.8\% độ tương quan thứ tự đặc trưng ($\rho=0.9575$). Kiểm toán nhân khẩu học xác nhận chênh lệch giới tính được giảm thiểu, duy trì Cơ Hội Bình Đẳng (EO diff = 0.008) và mức chênh lệch Equalized Odds thấp (0.015). Khung làm việc này cung cấp quy trình hỗ trợ ra quyết định toàn diện cho việc triển khai AI có trách nhiệm giải trình trong các chương trình trợ cấp công cộng.\footnote{Để hỗ trợ đánh giá phản biện giấu tên hai chiều (double-blind review), toàn bộ mã nguồn, artifact mô hình và sổ tay thực nghiệm được cung cấp công khai tại anonymous repository: \url{https://anonymous.4open.science/r/Governance-Aware-Poverty-ML-A91B}}
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -199,6 +201,8 @@ XGBoost (Tiêu Chuẩn) & 0.951 [0.943, 0.959] & 0.950 & 0.847 & 15.3\% [13.2\%,
 \label{fig_reliability}
 \end{figure}
 
+\textit{Phân Tích Đánh Đổi Vận Hành:} Mặc dù PWC-Loss XGBoost đạt Recall vượt trội (0.883) và sai số loại trừ thấp nhất (11.7\%), nó có sự đánh đổi nhỏ ở chỉ số Precision (0.937) so với Random Forest (0.965). Trong hoạch định an sinh xã hội, sự sụt giảm 2,8\% Precision này đại diện cho một đánh đổi hành chính có chủ đích: chấp nhận một lượng nhỏ rò rỉ trợ cấp (inclusion leakage) tốt hơn nhiều so với việc tước đi hỗ trợ cơ bản của các hộ gia đình cực kỳ khó khăn.
+
 \subsubsection{Kiểm Toán Độ Ổn Định Thực Nghiệm Đa Hạt Giống}
 Để xác nhận kết quả không phải do chọn hạt giống ngẫu nhiên thuận lợi, chúng tôi kiểm toán PWC-Loss XGBoost trên $5$ hạt giống ngẫu nhiên khác nhau ($42, 101, 202, 303, 505$). Kết quả cho thấy độ lệch chuẩn cực kỳ nhỏ: $\text{Độ chính xác} = 0.9568 \pm 0.0012$, $\text{Recall} = 0.8824 \pm 0.0031$, $\text{ROC-AUC} = 0.9786 \pm 0.0014$, $\text{Brier} = 0.0367 \pm 0.0008$, và $\text{ECE} = 0.0253 \pm 0.0011$, khẳng định tính ổn định cao.
 
@@ -335,7 +339,7 @@ Thay thế các công thức PMT cứng nhắc bằng quy trình học máy đư
 \bibitem{b30} World Bank AI \& Policy Taskforce (2025). Calibrated machine learning for transparent social welfare administration. \textit{IEEE Transactions on Technology and Society}, 6(1), 45-58.
 \bibitem{b_tabular_dl} Grinsztajn, L., Oyallon, E., \& Varoquaux, G. (2022). Why do tree-based models still outperform deep learning on tabular data?. \textit{Advances in Neural Information Processing Systems}, 35, 507-520.
 \bibitem{b_focal} Lin, T. Y., Goyal, P., Girshick, R., He, K., \& Dollár, P. (2017). Focal loss for dense object detection. In \textit{Proceedings of the IEEE International Conference on Computer Vision (ICCV)} (pp. 2980-2988).
-\bibitem{b_cbloss} Cui, Y., Jia, M., Lin, T. Y., Song, Y., \& Belongie, S. (2019). Class-balanced loss based on effective number of samples. đóng góp (CVPR) (pp. 9268-9277).
+\bibitem{b_cbloss} Cui, Y., Jia, M., Lin, T. Y., Song, Y., \& Belongie, S. (2019). Class-balanced loss based on effective number of samples. In \textit{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)} (pp. 9268-9277).
 \bibitem{b_asl} Ridnik, E., Ben-Baruch, E., Zamir, N., Sharir, G., Noy, A., \& Friedman, I. (2021). Asymmetric loss for multi-label classification. In \textit{Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)} (pp. 82-91).
 \end{thebibliography}
 \end{document}
