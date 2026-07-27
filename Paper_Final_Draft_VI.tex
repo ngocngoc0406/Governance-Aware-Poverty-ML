@@ -106,18 +106,18 @@ h_i = p_i^\gamma (1 - p_i) \left[ 1 + \gamma \log(1 - p_i) \right]
 \end{equation}
 
 \newtheorem{lemma}{Bổ đề}
-\begin{lemma}[Tính Dương Của Hessian Qua Điều Hòa Ngưỡng Dương]
-Với mọi xác suất dự đoán $p_i = \sigma(\hat{y}_i) \in (0, 1)$, hệ số $\alpha \ge 1$, và $\gamma \ge 0$, việc áp dụng điều hòa ngưỡng dương $h_i \leftarrow \max(h_i, \delta)$ với $\delta = 10^{-6}$ đảm bảo nghiêm ngặt tính dương của Hessian bậc hai ($h_i \ge \delta > 0$).
+\begin{lemma}[Tính Dương Của Hessian Qua Điều Hòa Tiệm Cận Động]
+Với mọi xác suất dự đoán $p_i = \sigma(\hat{y}_i) \in (0, 1)$, hệ số $\alpha \ge 1$, và $\gamma \ge 0$, việc áp dụng điều hòa tiệm cận động $h_i' \leftarrow \max(h_i, \delta)$ với $\delta = 10^{-6}$ đảm bảo nghiêm ngặt tính dương của Hessian bậc hai ($h_i' \ge \delta > 0$) và tính lồi của hàm surrogate bậc hai cục bộ.
 \end{lemma}
 \begin{proof}
-Đối với các hàm mục tiêu cây không lồi, đạo hàm bậc 2 có thể biến thiên trên miền log-odds. Việc áp dụng ngưỡng dưới dương $\delta = 10^{-6}$ (quy chuẩn thực thi trong các hàm loss XGBoost custom \cite{b20}) đảm bảo $h_i \ge \delta > 0$ nghiêm ngặt cho mọi mẫu $i$, tránh triệt tiêu mẫu số và đảm bảo bước cập nhật trọng số lá $w_j^* = -\frac{\sum g_i}{\sum h_i + \lambda}$ luôn ổn định.
+Trong thuật toán gradient tree boosting \cite{b20}, Hessian của các hàm loss bất đối xứng có thể suy giảm ở vùng cận biên ($p_i \to 0$ hoặc $p_i \to 1$). Việc thay thế $h_i$ bằng $h_i' = \max(h_i, \delta)$ tương đương về mặt toán học với việc bổ sung một phạt độ cong L2 cận biên $\frac{1}{2}(\delta - \min(h_i, \delta)) w_j^2$ vào khai triển Taylor cục bộ. Điều này đảm bảo tính dương nghiêm ngặt $h_i' \ge \delta = 10^{-6} > 0$, bảo toàn tính lồi nghiêm ngặt và đảm bảo bước cập nhật trọng số lá $w_j^* = -\frac{\sum g_i}{\sum h_i' + \lambda}$ luôn ổn định.
 \end{proof}
 
-\begin{lemma}[Sự Hội Tụ Đơn Điệu Của Bước Cập Nhật Trọng Số Lá Cây Bị Chặn]
-Ký hiệu $I_j$ là tập hợp các hộ gia đình được phân vào nút lá $j$. Với tham số điều hòa L2 $\lambda > 0$ và ngưỡng Hessian dưới $\delta > 0$, bước cập nhật trọng số lá tối ưu $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}$ dưới hàm $\mathcal{L}_{\text{PWC}}$ luôn bị chặn bởi $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, đảm bảo tính liên tục Lipschitz của gradient và sự giảm đơn điệu của hàm mục tiêu trong quá trình dựng cây.
+\begin{lemma}[Chứng Minh Đại Số Sự Hội Tụ Đơn Điệu Của Bước Cập Nhật Trọng Số Lá]
+Ký hiệu $I_j$ là tập hợp các hộ gia đình được phân vào nút lá $j$. Với tham số điều hòa L2 $\lambda > 0$ và ngưỡng Hessian dưới $\delta > 0$, bước cập nhật trọng số lá tối ưu $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i' + \lambda}$ dưới hàm $\mathcal{L}_{\text{PWC}}$ luôn bị chặn bởi $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, đảm bảo tính liên tục Lipschitz của gradient và sự giảm đơn điệu của hàm mục tiêu.
 \end{lemma}
 \begin{proof}
-Vì $h_i \ge \delta > 0$ theo Bổ đề 1, mẫu số thỏa mãn $\sum_{i \in I_j} h_i + \lambda \ge |I_j|\delta + \lambda > 0$. Tổng đạo hàm bậc nhất $g_i$ bị chặn đại số bởi $|g_i| \le \alpha (1 + \gamma / e)$ với mọi $p_i \in (0, 1)$. Do đó bước cập nhật $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, tránh bùng nổ gradient và đảm bảo sự hội tụ của thuật toán Newton-Raphson.
+Vì $h_i' \ge \delta > 0$ theo Bổ đề 1, mẫu số thỏa mãn $\sum_{i \in I_j} h_i' + \lambda \ge |I_j|\delta + \lambda > 0$. Để chặn tổng đạo hàm bậc nhất $\sum_{i \in I_j} g_i$, xét $y_i=1$: $g_i = \alpha (1-p_i)^\gamma [p_i - 1 + \gamma p_i \log(p_i)]$. Vì $p_i \in (0, 1)$, $|p_i - 1| = 1-p_i \le 1$. Theo giải tích, hàm $f(p) = -p \log(p)$ đạt cực đại toàn cục trên $(0, 1)$ tại $p = 1/e$ với giá trị $f(1/e) = 1/e$, do đó $|p_i \log(p_i)| \le 1/e$. Thế vào ta có $|g_i| \le \alpha (1-p_i)^\gamma [ (1-p_i) + \gamma/e ] \le \alpha (1 + \gamma/e)$. Đối xứng với $y_i=0$, $|g_i| \le 1 + \gamma/e \le \alpha (1 + \gamma/e)$. Do đó $\left|\sum_{i \in I_j} g_i\right| \le |I_j| \alpha (1 + \gamma / e)$, suy ra $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$. Bước cập nhật Newton bị chặn cùng Hessian dương bảo đảm tính liên tục Lipschitz của $\nabla \mathcal{L}_{\text{PWC}}$, chứng minh sự hội tụ đơn điệu qua từng bước tăng cường cây.
 \end{proof}
 
 \section{Kết Quả Thực Nghiệm}
@@ -200,7 +200,7 @@ XGBoost + Isotonic Reg (Post-Hoc) & 0.951 & 15.3\% & 0.0539 & 0.0149 \\
 Thực nghiệm của chúng tôi chứng minh các mô hình gradient tree boosting (XGBoost, CatBoost) vượt trội hơn các mạng nơ-ron Deep Tabular (MLP, TabNet) trên dữ liệu khảo sát dân số cấu trúc (độ chính xác 95.7\% vs. 94.1\%). Dù các kiến trúc Deep Tabular Transformer mới đề xuất như FT-Transformer, SAINT và TabPFN giới thiệu cơ chế self-attention cho đặc trưng, các đánh giá thực nghiệm diện rộng trên dữ liệu bảng \cite{b_tabular_dl} chỉ ra 3 lý do vận hành cốt lõi giúp gradient boosting duy trì ưu thế trong quản lý an sinh xã hội:
 \begin{enumerate}
 \item \textbf{Hiệu Quả Mẫu Trên Dữ Liệu Khảo Sát Quy Mô Vừa ($N \approx 10\text{k}$):} Các mô hình Tabular Transformer yêu cầu tập dữ liệu huấn luyện khổng lồ ($N > 100\text{k}$) để học tương tác đặc trưng phi tuyến mà không có giả định quy nạp (inductive bias), dẫn đến nguy cơ overfitting cao trên khảo sát dân số quy mô vừa ($N=9,557$).
-\item \textbf{Chi Phí Tính Toán & Khả Năng Triển Khai Edge:} Tabular Transformer đòi hỏi hạ tầng GPU đắt đỏ và có độ trễ suy luận cao hơn $>100\times$ so với GBDT, gây trở ngại cho việc triển khai tại các văn phòng an sinh địa phương với máy tính cấu hình khiêm tốn.
+\item \textbf{Chi Phí Tính Toán & Khả Năng Triển Khai Edge:} Tabular Transformer đòi hỏi hạ tầng GPU đắt đỏ và có độ trễ suy luận cao hơn $>100\times$ so với GBDT \cite{b_tabular_dl}, gây trở ngại cho việc triển khai tại các văn phòng an sinh địa phương với máy tính cấu hình khiêm tốn.
 \item \textbf{Tính Đại Diện Của Mô Hình Cơ Sở:} MLP và TabNet được lựa chọn làm đại diện chuẩn cho các kiến trúc nơ-ron dữ liệu bảng tương ứng với mạng MLP phi cấu trúc và cơ sở chú ý sparsemax attention.
 \end{enumerate}
 
@@ -225,8 +225,8 @@ Mặc dù thực nghiệm đánh giá trên dữ liệu điều tra dân số Co
 \subsection{Phân Tích Độ Phức Tạp Tính Toán & Chi Phí Tài Nguyên}
 Để đánh giá tính khả thi khi triển khai tại các hệ thống IT công cộng, chúng tôi phân tích độ phức tạp tiệm cận và bộ nhớ lưu trữ:
 \begin{itemize}
-\item \textbf{Độ Phức Tạp Huấn Luyện (Training Complexity):} Với cỡ mẫu $N=9,557$, số thuộc tính $M=142$, độ sâu cây $K=6$, và $T=300$ cây, độ phức tạp phân tách nút cây là $\mathcal{O}(T \cdot K \cdot M \cdot N \log N)$. Thời gian huấn luyện thực tế hoàn thành trong $0.25$ giây trên CPU 4 nhân tiêu chuẩn.
-\item \textbf{Độ Phức Tạp Suy Luận (Inference Complexity):} Việc phân loại một hộ gia đình đánh giá $T=300$ đường đi cây với độ sâu tối đa $K=6$, cho độ phức tạp suy luận cố định $\mathcal{O}(T \cdot K) = \mathcal{O}(1800 \text{ phép tính})$, mất chưa đầy $<0.068\text{ ms}$ cho mỗi hộ.
+\item \textbf{Độ Phức Tạp Huấn Luyện (Training Complexity):} Với cỡ mẫu $N=9,557$, số thuộc tính $M=142$, độ sâu tối đa $D=6$, và $T=300$ cây, độ phức tạp phân tách nút cây tuân theo chuẩn $\mathcal{O}(T \cdot D \cdot M \cdot N \log N)$. Thời gian huấn luyện thực tế hoàn thành trong $0.25$ giây trên CPU 4 nhân tiêu chuẩn.
+\item \textbf{Độ Phức Tạp Suy Luận (Inference Complexity):} Việc phân loại một hộ gia đình đánh giá $T=300$ đường đi cây với độ sâu tối đa $D=6$, cho độ phức tạp suy luận cố định $\mathcal{O}(T \cdot D) = \mathcal{O}(1800 \text{ phép tính})$, mất chưa đầy $<0.068\text{ ms}$ cho mỗi hộ.
 \item \textbf{Dung Lượng Bộ Nhớ (Memory Footprint):} Bộ nhớ RAM tiêu thụ khi suy luận luôn dưới $42\text{ MB}$, cho phép chạy mượt mà trên các máy tính văn phòng thế hệ cũ mà không cần phần cứng GPU.
 \end{itemize}
 

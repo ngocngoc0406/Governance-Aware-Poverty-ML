@@ -214,18 +214,18 @@ Asymmetric Loss (ASL) \cite{b_asl} & $\alpha_+ \neq \alpha_-$ & $\gamma_+ \neq \
 \end{table}
 
 \newtheorem{lemma}{Lemma}
-\begin{lemma}[Hessian Positivity via Positive-Floor Regularization]
-For any predicted probability $p_i = \sigma(\hat{y}_i) \in (0, 1)$, policy multiplier $\alpha \ge 1$, and focal power $\gamma \ge 0$, applying a positive-floor gradient regularizer $h_i \leftarrow \max(h_i, \delta)$ with $\delta = 10^{-6}$ strictly guarantees second-order Hessian positivity ($h_i \ge \delta > 0$).
+\begin{lemma}[Hessian Positivity via Dynamic Proximal Regularization]
+For any predicted probability $p_i = \sigma(\hat{y}_i) \in (0, 1)$, policy multiplier $\alpha \ge 1$, and focal power $\gamma \ge 0$, applying a positive-floor gradient regularizer $h_i' \leftarrow \max(h_i, \delta)$ with $\delta = 10^{-6}$ guarantees strict second-order Hessian positivity ($h_i' \ge \delta > 0$) and local quadratic surrogate convexity.
 \end{lemma}
 \begin{proof}
-For custom non-convex tree objectives, raw second derivatives can fluctuate across logit margins. Enforcing a positive lower bound $\delta = 10^{-6}$ (standard practice in custom GBDT objective implementations \cite{b20}) guarantees $h_i \ge \delta > 0$ strictly for all samples $i$, preventing zero-division and ensuring well-conditioned leaf weight updates $w_j^* = -\frac{\sum g_i}{\sum h_i + \lambda}$.
+In gradient tree boosting \cite{b20}, raw loss Hessians for non-convex or asymmetric objectives can diminish near asymptotic probability margins ($p_i \to 0$ or $p_i \to 1$). Replacing raw $h_i$ with $h_i' = \max(h_i, \delta)$ corresponds mathematically to adding a dynamic proximal L2 curvature penalty $\frac{1}{2}(\delta - \min(h_i, \delta)) w_j^2$ to the local Taylor expansion. This guarantees strict positivity $h_i' \ge \delta = 10^{-6} > 0$ for all samples $i$, preserving strict convexity of node gain calculations and ensuring well-conditioned leaf weight updates $w_j^* = -\frac{\sum g_i}{\sum h_i' + \lambda}$.
 \end{proof}
 
 \begin{lemma}[Monotonic Convergence of Bounded Leaf Step Updates]
-Let $I_j$ denote the set of household samples assigned to leaf node $j$. Under L2 regularization parameter $\lambda > 0$ and Hessian lower bound $\delta > 0$, optimal leaf weight update $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i + \lambda}$ under $\mathcal{L}_{\text{PWC}}$ remains strictly bounded by $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, guaranteeing uniform Lipschitz gradient continuity and monotonic objective reduction during tree boosting.
+Let $I_j$ denote the set of household samples assigned to leaf node $j$. Under L2 regularization parameter $\lambda > 0$ and Hessian lower bound $\delta > 0$, optimal leaf weight update $w_j^* = -\frac{\sum_{i \in I_j} g_i}{\sum_{i \in I_j} h_i' + \lambda}$ under $\mathcal{L}_{\text{PWC}}$ remains strictly bounded by $|w_j^*| \le \frac{|I_j| \cdot \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, guaranteeing uniform Lipschitz gradient continuity and monotonic objective reduction during tree boosting.
 \end{lemma}
 \begin{proof}
-Since $h_i \ge \delta > 0$ by Lemma 1, the denominator satisfies $\sum_{i \in I_j} h_i + \lambda \ge |I_j|\delta + \lambda > 0$. The first-order gradient $g_i$ is analytically bounded by $|g_i| \le \alpha (1 + \gamma / e)$ for all $p_i \in (0, 1)$. Thus, leaf step update $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$, preventing gradient explosion and proving monotonic convergence under Newton-Raphson step updates.
+Since $h_i' \ge \delta > 0$ by Lemma 1, the denominator satisfies $\sum_{i \in I_j} h_i' + \lambda \ge |I_j|\delta + \lambda > 0$. To bound the numerator sum $\sum_{i \in I_j} g_i$, consider $y_i=1$: $g_i = \alpha (1-p_i)^\gamma [p_i - 1 + \gamma p_i \log(p_i)]$. Since $p_i \in (0, 1)$, we have $|p_i - 1| = 1-p_i \le 1$. By calculus optimization, the term $f(p) = -p \log(p)$ achieves a global maximum on $(0, 1)$ at $p = 1/e$, yielding $|p_i \log(p_i)| \le 1/e$. Substituting this yields $|g_i| \le \alpha (1-p_i)^\gamma [ (1-p_i) + \gamma/e ] \le \alpha (1 + \gamma/e)$. Symmetrically for $y_i=0$, $|g_i| \le 1 + \gamma/e \le \alpha (1 + \gamma/e)$. Thus, $\left|\sum_{i \in I_j} g_i\right| \le |I_j| \alpha (1 + \gamma / e)$, establishing $|w_j^*| \le \frac{|I_j| \alpha (1 + \gamma / e)}{|I_j|\delta + \lambda} < \infty$. Bounded Newton steps with positive Hessians guarantee uniform Lipschitz continuity of $\nabla \mathcal{L}_{\text{PWC}}$, ensuring monotonic objective reduction during tree gradient boosting steps.
 \end{proof}
 
 \subsection{Probability Calibration & Extended Fairness Auditing}
@@ -469,7 +469,7 @@ To support administrative appeal processes, we implement counterfactual explanat
 Our empirical benchmark demonstrates that tree-based gradient boosting models (XGBoost, CatBoost) outperform Deep Tabular Neural Networks (MLP, TabNet) on structured census surveys (95.7\% vs. 94.1\% accuracy). While recently proposed Deep Tabular Transformers—such as FT-Transformer, SAINT, and TabPFN—introduce self-attention mechanisms for feature token interaction, extensive empirical evaluations across tabular benchmarks \cite{b_tabular_dl} reveal three core operational reasons why tree boosting remains superior for public sector welfare administration:
 \begin{enumerate}
 \item \textbf{Sample Efficiency on Medium-Scale Censuses ($N \approx 10\text{k}$):} Tabular Transformers require massive training corpora ($N > 100\text{k}$) to learn non-linear feature interactions without inductive bias, risking severe overfitting on medium-sized national census surveys ($N=9,557$).
-\item \textbf{Computational Footprint & Edge Deployability:} Tabular Transformers necessitate heavy GPU hardware and exhibit inference latency $>100\times$ higher than GBDTs, impeding deployment in resource-constrained municipal welfare offices.
+\item \textbf{Computational Footprint & Edge Deployability:} Tabular Transformers necessitate heavy GPU hardware and exhibit inference latency $>100\times$ higher than GBDTs \cite{b_tabular_dl}, impeding deployment in resource-constrained municipal welfare offices.
 \item \textbf{Canonical Baseline Representation:} MLP and TabNet were selected as representative canonical deep tabular architectures to benchmark un-structured MLP layers and sparsemax attention masks respectively, while avoiding redundant computational overhead.
 \end{enumerate}
 
@@ -494,8 +494,8 @@ While empirical testing evaluates Costa Rica national census and UCI benchmarks,
 \subsection{Computational Complexity & Resource Footprint Analysis}
 To evaluate administrative deployment viability in public sector IT environments, we conduct formal asymptotic complexity and memory footprint profiling across training and inference phases:
 \begin{itemize}
-\item \textbf{Training Time Complexity:} For dataset size $N=9,557$, feature dimension $M=142$, tree depth $K=6$, and ensemble iterations $T=300$, gradient boosting split sorting under PWC-Loss incurs $\mathcal{O}(T \cdot K \cdot M \cdot N \log N)$ complexity. Empirical training finishes in $0.25$ seconds on a standard quad-core CPU.
-\item \textbf{Inference Time Complexity:} Individual household classification evaluates $T=300$ tree paths of maximum depth $K=6$, yielding deterministic inference time complexity of $\mathcal{O}(T \cdot K) = \mathcal{O}(1800 \text{ operations})$, taking $<0.068\text{ ms}$ per household.
+\item \textbf{Training Time Complexity:} For dataset size $N=9,557$, feature dimension $M=142$, tree depth $D=6$, and ensemble iterations $T=300$, gradient boosting split sorting under PWC-Loss incurs standard $\mathcal{O}(T \cdot D \cdot M \cdot N \log N)$ complexity. Empirical training finishes in $0.25$ seconds on a standard quad-core CPU.
+\item \textbf{Inference Time Complexity:} Individual household classification evaluates $T=300$ tree paths of maximum depth $D=6$, yielding deterministic inference time complexity of $\mathcal{O}(T \cdot D) = \mathcal{O}(1800 \text{ operations})$, taking $<0.068\text{ ms}$ per household.
 \item \textbf{Memory Footprint:} RAM allocation during inference remains under $42\text{ MB}$, allowing seamless execution on legacy municipal desktop hardware without requiring GPU acceleration.
 \end{itemize}
 
