@@ -117,21 +117,3 @@ python run_sensitivity_grid.py
 ```
 
 ---
-
-## 📜 Citation
-
-If you find this codebase or methodology useful in your research, please cite our paper:
-
-```bibtex
-@inproceedings{nguyen2026governance,
-  title={Governance-Aware Explainable Machine Learning for Transparent Poverty Targeting},
-  author={Nguyen, Thi Ngoc},
-  booktitle={Proceedings of the IEEE International Conference on Responsible AI and Public Policy},
-  year={2026}
-}
-```
-
----
-
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
